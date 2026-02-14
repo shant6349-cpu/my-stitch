@@ -2,195 +2,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stitch Wide & Clear</title>
+    <title>Stitch: Classic Interface</title>
     <style>
-        * { box-sizing: border-box; }
-        
         body {
-            margin: 0; padding: 0;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; width: 100vw;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            transition: background 0.8s ease;
-            background: #2c3e50;
+            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
+            background: #a8e063; font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: 1s;
         }
-
-        /* ТЕМЫ КОМНАТ */
-        body.home { background: radial-gradient(circle, #ff9966, #ff5e62); }
-        body.beach { background: radial-gradient(circle, #4ca1af, #2c3e50); }
-        body.space { background: radial-gradient(circle, #0f0c29, #302b63, #24243e); }
+        body.home { background: #ff9966; }
+        body.beach { background: #4ca1af; }
+        body.space { background: #24243e; }
 
         #pet-stage {
-            width: 100%; height: 100vh;
-            display: flex; flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            width: 350px; height: 650px; background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px); border-radius: 40px; text-align: center;
+            border: 2px solid white; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 20px;
         }
 
-        /* СТАТИСТИКА */
-        .top-ui {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            width: 100%; padding-top: 10px;
-        }
-        .stats { flex-grow: 1; margin: 0 15px; }
-        .stat-row { margin-bottom: 8px; }
-        .bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; }
-        .fill { height: 100%; width: 80%; transition: width 0.5s ease; }
-        .lvl-box, .coin-box { 
-            background: white; border-radius: 12px; padding: 8px; 
-            text-align: center; min-width: 60px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        /* ВЕРХНЯЯ ПАНЕЛЬ (КАК НА ВИДЕО) */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; }
+        .lvl-box { background: white; border-radius: 15px; padding: 10px; width: 60px; }
+        .stats-bars { flex-grow: 1; margin: 0 10px; }
+        .coin-box { background: white; border-radius: 15px; padding: 10px; width: 60px; }
+        
+        .bar-container { width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; margin: 5px 0; overflow: hidden; }
+        .fill { height: 100%; transition: 0.5s; }
 
         /* СТИЧ */
-        #stitch-container {
-            position: relative; width: 240px; height: 220px;
-            margin: auto; cursor: pointer; touch-action: none;
-        }
+        #stitch-container { position: relative; width: 200px; height: 180px; margin: auto; cursor: pointer; }
         .head {
-            position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at 35% 30%, #5d8aff, #3a56d4 60%, #1e2a78 100%);
-            border-radius: 50% 50% 46% 46%; z-index: 5;
-            box-shadow: inset -5px -10px 20px rgba(0,0,0,0.6), 0 15px 40px rgba(0,0,0,0.4);
+            width: 100%; height: 100%; background: #3a56d4; border-radius: 50% 50% 45% 45%;
+            position: relative; z-index: 5; box-shadow: inset -5px -10px 15px rgba(0,0,0,0.3);
         }
-        .ear { position: absolute; top: -20px; width: 70px; height: 150px; background: #3a56d4; border-radius: 100% 20% 100% 20%; z-index: 1; }
-        .ear.left { left: -50px; transform: rotate(-35deg); }
-        .ear.right { right: -50px; transform: rotate(35deg) scaleX(-1); }
-        .eye-patch { position: absolute; top: 35px; width: 80px; height: 100px; background: rgba(0,0,0,0.15); border-radius: 50%; z-index: 6; }
-        .eye-patch.left { left: 15px; transform: rotate(12deg); }
-        .eye-patch.right { right: 15px; transform: rotate(-12deg); }
-        .eye { position: absolute; top: 20px; left: 15px; width: 50px; height: 65px; background: #080808; border-radius: 50%; transition: 0.1s; }
-        .eye::after { content: ''; position: absolute; top: 10px; left: 10px; width: 15px; height: 25px; background: white; border-radius: 50%; opacity: 0.9; }
-        .nose { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); width: 50px; height: 30px; background: #1b2661; border-radius: 50%; z-index: 7; }
-        .mouth { position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); width: 55px; height: 6px; border-bottom: 4px solid #1b2661; border-radius: 50%; z-index: 7; }
+        .ear { position: absolute; top: -15px; width: 60px; height: 130px; background: #3a56d4; border-radius: 100% 20%; z-index: 1; }
+        .ear.left { left: -40px; transform: rotate(-30deg); }
+        .ear.right { right: -40px; transform: rotate(30deg) scaleX(-1); }
+        .eye { width: 45px; height: 60px; background: #000; border-radius: 50%; position: absolute; top: 30px; }
+        .eye.left { left: 35px; } .eye.right { right: 35px; }
+        .eye::after { content: ''; position: absolute; top: 10px; left: 10px; width: 12px; height: 20px; background: #fff; border-radius: 50%; }
+        .nose { width: 40px; height: 20px; background: #1b2661; position: absolute; top: 110px; left: 50%; transform: translateX(-50%); border-radius: 50%; z-index: 6; }
+        .mouth { width: 40px; height: 5px; border-bottom: 3px solid #1b2661; position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); border-radius: 50%; z-index: 6; }
 
-        /* ЭФФЕКТЫ */
-        .purring { animation: vibrate 0.1s infinite; }
-        @keyframes vibrate { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-        .eating .mouth { height: 25px; background: #000; border-radius: 50%; }
+        /* НИЖНИЕ КНОПКИ-КАРТОЧКИ */
+        .bottom-menu { display: flex; justify-content: space-around; background: white; border-radius: 30px; padding: 10px; }
+        .menu-btn { width: 60px; height: 70px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; border: none; background: #f0f0f0; }
+        .menu-btn:active { transform: scale(0.9); background: #ff4081; color: white; }
 
-        /* КНОПКИ */
-        .controls { width: 100%; padding-bottom: 10px; }
-        .btn-row { display: flex; gap: 10px; margin-top: 10px; }
-        button {
-            flex: 1; padding: 18px 5px; border: none; border-radius: 20px;
-            background: rgba(255, 255, 255, 0.2); color: white; font-weight: bold;
-            font-size: 14px; border: 1px solid rgba(255,255,255,0.2);
-        }
-        button:active { background: #3a56d4; transform: scale(0.95); }
-        #status-text { color: white; font-size: 1.4rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 10px 0; }
+        .eating .mouth { height: 20px; background: black; border-radius: 50%; }
     </style>
 </head>
 <body class="home">
 
 <div id="pet-stage">
-    <div class="top-ui">
-        <div class="lvl-box"><small style="color:gray">LVL</small><br><b style="color:#e91e63; font-size:20px">2</b></div>
-        <div class="stats">
-            <div class="stat-row"><div class="bar-bg"><div id="h-bar" class="fill" style="background:#ff5e62"></div></div></div>
-            <div class="stat-row"><div class="bar-bg"><div id="ha-bar" class="fill" style="background:#a8e063"></div></div></div>
+    <div class="top-nav">
+        <div class="lvl-box"><small>LVL</small><br><b style="color:#ff4081">2</b></div>
+        <div class="stats-bars">
+            <div class="bar-container"><div id="h-fill" class="fill" style="background:#ff5e62; width:80%"></div></div>
+            <div class="bar-container"><div id="ha-fill" class="fill" style="background:#a8e063; width:80%"></div></div>
         </div>
-        <div class="coin-box"><small style="color:gray">💰</small><br><b style="color:#f9d423; font-size:18px">80</b></div>
+        <div class="coin-box">💰<br><b>80</b></div>
     </div>
 
-    <div id="stitch-container" onmousedown="startPurr()" onmouseup="stopPurr()" ontouchstart="startPurr()" ontouchend="stopPurr()">
+    <div id="stitch-container" onclick="purr()">
         <div id="stitch-face">
             <div class="ear left"></div><div class="ear right"></div>
             <div class="head">
-                <div class="eye-patch left"><div class="eye"></div></div>
-                <div class="eye-patch right"><div class="eye"></div></div>
+                <div class="eye left"></div><div class="eye right"></div>
                 <div class="nose"></div><div id="mouth" class="mouth"></div>
             </div>
         </div>
     </div>
 
-    <div id="status-text">Алоха! ✨</div>
+    <h3 id="status" style="color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">Алоха! ✨</h3>
 
-    <div class="controls">
-        <div class="btn-row">
-            <button onclick="setWorld('home')">🏠 ДОМ</button>
-            <button onclick="setWorld('beach')">🏖️ ПЛЯЖ</button>
-            <button onclick="setWorld('space')">🚀 КОСМОС</button>
-        </div>
-        <div class="btn-row">
-            <button onclick="doAction('feed')">🥪 ЕДА</button>
-            <button onclick="doAction('play')">🏀 ИГРА</button>
-            <button onclick="doAction('hug')">🫂 ОХАНА</button>
-            <button onclick="doAction('sleep')">💤 СОН</button>
-        </div>
+    <div class="bottom-menu">
+        <button class="menu-btn" onclick="act('feed')">🍴</button>
+        <button class="menu-btn" onclick="act('play')">🧸</button>
+        <button class="menu-btn" onclick="act('room')">🏠</button>
+        <button class="menu-btn" onclick="act('sleep')">🛏️</button>
     </div>
 </div>
 
 <script>
-    let stats = { hunger: 80, happy: 80 };
-    let audioCtx, osc;
+    let rooms = ['home', 'beach', 'space'];
+    let currentRoom = 0;
 
-    // ИСПРАВЛЕННЫЙ ГОЛОС (Медленнее и хриплее)
-    function speak(text, pitch = 1.6, rate = 0.8) {
-        window.speechSynthesis.cancel(); // Остановить старую речь
-        const m = new SpeechSynthesisUtterance(text);
-        m.lang = 'ru-RU';
-        m.pitch = pitch;
-        m.rate = rate; // Замедлили речь
+    // МЕДЛЕННЫЙ ГОЛОС
+    function say(txt, p=1.6) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(txt);
+        m.lang = 'ru-RU'; m.pitch = p; m.rate = 0.75; // Скорость 0.75 - как просил
         window.speechSynthesis.speak(m);
     }
 
-    function setWorld(w) {
-        document.body.className = w;
-        const s = document.getElementById('status-text');
-        if(w === 'space') { s.innerText = "Стич летит домой! 🚀"; speak("Моя лететь домой", 1.9); }
-        else if(w === 'beach') { s.innerText = "Пляж! Серфинг! 🏄‍♂️"; speak("Абакаба! Пляж", 1.8); }
-        else { s.innerText = "Дома уютно! 🏠"; speak("Алоха", 1.6); }
-    }
-
-    function doAction(type) {
-        const s = document.getElementById('status-text');
+    function act(type) {
+        const s = document.getElementById('status');
         const f = document.getElementById('stitch-face');
-        if (type === 'feed') {
-            stats.hunger = Math.min(100, stats.hunger + 20);
+        if(type === 'feed') {
             f.classList.add('eating');
-            speak("Ммм! Очень вкусно", 1.8, 0.7);
-            s.innerText = "Ням-ням! 🥪";
+            s.innerText = "Вкусно! 🥪"; say("Ммм! Очень вкусно");
             setTimeout(() => f.classList.remove('eating'), 1000);
-        } else if (type === 'play') {
-            stats.happy = Math.min(100, stats.happy + 25);
-            s.innerText = "Уиии! Играем! 🏀";
-            speak("Уиии! Абакаба", 2, 0.8);
-        } else if (type === 'hug') {
-            s.innerText = "Охана — это семья 🫂";
-            speak("Охана значит семья", 0.7, 0.7);
-        } else if (type === 'sleep') {
-            s.innerText = "Стич спит... 💤";
-            speak("Хрррр псссс", 0.5, 0.5);
+        } else if(type === 'play') {
+            s.innerText = "Играем! 🧸"; say("Уиии! Абакаба", 2);
+        } else if(type === 'room') {
+            currentRoom = (currentRoom + 1) % rooms.length;
+            document.body.className = rooms[currentRoom];
+            s.innerText = "Меняем комнату!"; say("О! Другое место");
+        } else if(type === 'sleep') {
+            s.innerText = "Стич спит... 💤"; say("Хррр пссс", 0.5);
         }
-        updateUI();
     }
 
-    function startPurr() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        osc = audioCtx.createOscillator();
-        let g = audioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(60, audioCtx.currentTime);
-        g.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.start();
-        document.getElementById('stitch-container').classList.add('purring');
-        document.getElementById('status-text').innerText = "Мррр... ❤️";
+    function purr() {
+        document.getElementById('status').innerText = "Мррр... ❤️";
+        say("Охана значит семья", 0.8);
     }
-
-    function stopPurr() {
-        if (osc) { osc.stop(); osc.disconnect(); }
-        document.getElementById('stitch-container').classList.remove('purring');
-    }
-
-    function updateUI() {
-        document.getElementById('h-bar').style.width = stats.hunger + '%';
-        document.getElementById('ha-bar').style.width = stats.happy + '%';
-    }
-    updateUI();
 </script>
 </body>
 </html>
