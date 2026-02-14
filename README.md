@@ -2,229 +2,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stitch: Real Tamagotchi</title>
+    <title>Stitch: Fullscreen Edition</title>
     <style>
-        :root {
-            --stitch-blue: #3a56d4;
-            --stitch-dark: #1b2661;
-            --ui-pink: #ff477e;
-            --gold: #ffd700;
-            --bar-bg: rgba(255, 255, 255, 0.3);
-        }
-
+        /* ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ ШИРОКОГО ЭКРАНА */
         body {
-            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center;
-            height: 100vh; background: #050505; font-family: 'Arial Rounded MT Bold', sans-serif; overflow: hidden;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            transition: background 1s ease;
+            background: #2c3e50;
         }
 
-        #game-window {
-            width: 100%; max-width: 450px; height: 100vh;
-            position: relative; display: flex; flex-direction: column;
-            transition: 0.5s ease;
+        /* ФОНЫ КОМНАТ */
+        body.home { background: radial-gradient(circle, #ff9966, #ff5e62); }
+        body.beach { background: radial-gradient(circle, #4ca1af, #2c3e50); }
+        body.space { background: radial-gradient(circle, #0f0c29, #302b63, #24243e); }
+
+        /* ГЛАВНЫЙ КОНТЕЙНЕР НА ВЕСЬ ЭКРАН */
+        #pet-stage {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
-        /* КОМНАТЫ */
-        .kitchen { background: radial-gradient(#ff9a9e, #fad0c4); }
-        .playroom { background: radial-gradient(#a1c4fd, #c2e9fb); }
-        .bathroom { background: radial-gradient(#84fab0, #8fd3f4); }
-        .bedroom { background: radial-gradient(#302b63, #0f0c29); }
-
-        /* ИНТЕРФЕЙС ПАНЕЛИ СТАТУСА */
-        .hud {
-            padding: 15px; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(20px);
-            display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; z-index: 100;
+        /* ПОЛОСКИ СТАТИСТИКИ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 10px;
         }
+        .stat-item { text-align: left; }
+        .stat-label { font-size: 11px; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .bar-bg { width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden; margin-top: 4px; }
+        .fill { height: 100%; width: 80%; transition: width 0.5s ease; }
+
+        /* СТИЧ ПО ЦЕНТРУ */
+        #stitch-container {
+            position: relative;
+            width: 200px;
+            height: 180px;
+            margin: auto;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .head {
+            position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle at 35% 30%, #5d8aff, #3a56d4 60%, #1e2a78 100%);
+            border-radius: 50% 50% 46% 46%; z-index: 5;
+            box-shadow: inset -5px -10px 20px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .ear { position: absolute; top: -20px; width: 60px; height: 130px; background: #3a56d4; border-radius: 100% 20% 100% 20%; z-index: 1; transition: 0.5s; }
+        .ear.left { left: -40px; transform: rotate(-35deg); }
+        .ear.right { right: -40px; transform: rotate(35deg) scaleX(-1); }
+
+        .eye-patch { position: absolute; top: 25px; width: 70px; height: 90px; background: rgba(0, 0, 0, 0.15); border-radius: 50%; z-index: 6; }
+        .eye-patch.left { left: 15px; transform: rotate(12deg); }
+        .eye-patch.right { right: 15px; transform: rotate(-12deg); }
+
+        .eye { position: absolute; top: 18px; left: 12px; width: 46px; height: 58px; background: #080808; border-radius: 50%; transition: 0.15s; }
+        .eye::before { content: ''; position: absolute; top: 8px; left: 8px; width: 12px; height: 22px; background: white; border-radius: 50%; opacity: 0.9; }
+
+        .nose { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); width: 46px; height: 26px; background: #1b2661; border-radius: 50% 50% 40% 40%; z-index: 7; }
+        .mouth { position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); width: 45px; height: 6px; border-bottom: 4px solid #1b2661; border-radius: 50%; z-index: 7; transition: 0.3s; }
+
+        /* АНИМАЦИИ */
+        .purring { animation: vibe 0.1s infinite; }
+        @keyframes vibe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        .blinking .eye { height: 2px; top: 45px; }
+        .eating .mouth { height: 20px; background: #000; border-radius: 50%; }
+
+        /* БЛОК КНОПОК ВНИЗУ */
+        .controls-area { width: 100%; margin-bottom: 10px; }
+        .label-text { font-size: 10px; font-weight: bold; opacity: 0.7; margin: 10px 0 5px; text-transform: uppercase; letter-spacing: 1px; color: white; }
+        .btn-group { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         
-        .stats-col { display: flex; flex-direction: column; gap: 5px; }
-        
-        .bar-container { width: 100%; height: 8px; background: var(--bar-bg); border-radius: 4px; overflow: hidden; position: relative; }
-        .bar-fill { height: 100%; transition: width 0.3s ease, background 0.3s; }
-        
-        .label { font-size: 9px; color: white; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; display: block; }
-        
-        .stat-card { background: white; border-radius: 12px; padding: 5px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button {
+            flex: 1;
+            min-width: 80px;
+            padding: 15px 5px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active { background: #3a56d4; transform: scale(0.95); }
 
-        /* СТИЧ */
-        #stage { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-        .stitch-container { width: 200px; height: 180px; position: relative; cursor: pointer; transition: 0.2s; animation: breathe 3s ease-in-out infinite; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-
-        .head { width: 100%; height: 100%; background: var(--stitch-blue); border-radius: 50% 50% 45% 45%; border: 4px solid var(--stitch-dark); box-shadow: inset -8px -12px 30px rgba(0,0,0,0.4); }
-        .ear { position: absolute; top: -25px; width: 55px; height: 130px; background: var(--stitch-blue); border: 4px solid var(--stitch-dark); border-radius: 100% 20%; z-index: -1; }
-        .ear.l { left: -35px; transform: rotate(-35deg); }
-        .ear.r { right: -35px; transform: rotate(35deg) scaleX(-1); }
-        .patch { position: absolute; top: 25px; width: 75px; height: 100px; background: rgba(173, 216, 230, 0.3); border-radius: 50%; }
-        .patch.l { left: 15px; transform: rotate(15deg); }
-        .patch.r { right: 15px; transform: rotate(-15deg); }
-        .eye { width: 50px; height: 70px; background: #000; border-radius: 50%; position: absolute; top: 15px; left: 12px; }
-        .eye::after { content: ''; position: absolute; top: 10px; left: 10px; width: 15px; height: 25px; background: white; border-radius: 50%; }
-        .nose { width: 45px; height: 25px; background: var(--stitch-dark); position: absolute; top: 105px; left: 50%; transform: translateX(-50%); border-radius: 50% 50% 40% 40%; }
-
-        /* ПРЕДМЕТЫ */
-        .toy { position: absolute; font-size: 60px; cursor: pointer; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.2)); z-index: 10; transition: 0.2s; }
-        .toy:active { transform: scale(1.2); }
-
-        /* НИЖНЯЯ ПАНЕЛЬ */
-        .nav { height: 100px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 10px 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(30px); border-radius: 35px 35px 0 0; }
-        .btn { background: white; border: none; border-radius: 20px; font-size: 32px; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 0 #cbd5e0; }
-        .btn.active { background: var(--ui-pink); transform: translateY(4px); box-shadow: none; color: white; }
-
-        /* ЭФФЕКТЫ */
-        .particle { position: absolute; pointer-events: none; animation: flyUp 1s forwards; font-size: 24px; z-index: 1000; }
-        @keyframes flyUp { to { transform: translateY(-100px) opacity: 0; } }
+        #status { margin: 15px 0; font-size: 1.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
     </style>
 </head>
-<body>
+<body class="home">
 
-<div id="game-window" class="kitchen">
-    <div class="hud">
-        <div class="stat-card">
-            <span style="font-size: 10px; font-weight: bold;">LVL</span>
-            <div id="lvl" style="font-size: 18px; font-weight: 900; color: var(--ui-pink);">1</div>
+<div id="pet-stage">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-label">🍖 ГОЛОД</span>
+            <div class="bar-bg"><div id="h-bar" class="fill" style="background: #ff5e62; width: 80%;"></div></div>
         </div>
-        
-        <div class="stats-col">
-            <div>
-                <span class="label">🍖 Голод</span>
-                <div class="bar-container"><div id="hunger-bar" class="bar-fill" style="width: 80%; background: #ff4b2b;"></div></div>
-            </div>
-            <div>
-                <span class="label">🧼 Чистота</span>
-                <div class="bar-container"><div id="clean-bar" class="bar-fill" style="width: 100%; background: #4facfe;"></div></div>
-            </div>
-            <div>
-                <span class="label">⚡ Энергия</span>
-                <div class="bar-container"><div id="energy-bar" class="bar-fill" style="width: 100%; background: #f9d423;"></div></div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <span style="font-size: 18px;">💰</span>
-            <div id="coins" style="font-size: 14px; font-weight: bold; color: #b8860b;">100</div>
+        <div class="stat-item">
+            <span class="stat-label">🌈 СЧАСТЬЕ</span>
+            <div class="bar-bg"><div id="ha-bar" class="fill" style="background: #a8e063; width: 80%;"></div></div>
         </div>
     </div>
 
-    <div id="stage" onclick="createHeart(event)">
-        <div id="t-k" class="toy" style="bottom:20%; left:10%;" onclick="action('eat')">🍱</div>
-        <div id="t-p" class="toy" style="bottom:15%; right:10%; display:none;" onclick="action('play')">🏀</div>
-        <div id="t-b" class="toy" style="bottom:25%; left:20%; display:none;" onclick="action('wash')">🧼</div>
-        <div id="t-s" class="toy" style="bottom:15%; right:20%; display:none;" onclick="action('sleep')">🌙</div>
-
-        <div class="stitch-container" id="stitch" onclick="dance()">
-            <div class="ear l"></div><div class="ear r"></div>
+    <div id="stitch-container" 
+         onmousedown="startPurr()" onmouseup="stopPurr()" 
+         ontouchstart="startPurr()" ontouchend="stopPurr()">
+        <div id="stitch-face">
+            <div class="ear left"></div><div class="ear right"></div>
             <div class="head">
-                <div class="patch l"><div class="eye"></div></div>
-                <div class="patch r"><div class="eye"></div></div>
+                <div class="eye-patch left"><div class="eye"></div></div>
+                <div class="eye-patch right"><div class="eye"></div></div>
                 <div class="nose"></div>
+                <div id="mouth" class="mouth"></div>
             </div>
         </div>
     </div>
 
-    <div class="nav">
-        <button class="btn active" onclick="nav('kitchen', this)">🍴</button>
-        <button class="btn" onclick="nav('playroom', this)">🧸</button>
-        <button class="btn" onclick="nav('bathroom', this)">🧼</button>
-        <button class="btn" onclick="nav('bedroom', this)">🛌</button>
+    <h3 id="status">Алоха! ✨</h3>
+
+    <div class="controls-area">
+        <div class="label-text">Выбрать локацию</div>
+        <div class="btn-group">
+            <button onclick="setRoom('home')">🏠 ДОМ</button>
+            <button onclick="setRoom('beach')">🏖️ ПЛЯЖ</button>
+            <button onclick="setRoom('space')">🚀 КОСМОС</button>
+        </div>
+
+        <div class="label-text">Действия</div>
+        <div class="btn-group">
+            <button onclick="play('feed')">🥪 ЕДА</button>
+            <button onclick="play('uke')">🎸 ГИТАРА</button>
+            <button onclick="play('doll')">🧸 КУКЛА</button>
+            <button onclick="play('sleep')">💤 СОН</button>
+        </div>
     </div>
 </div>
 
 <script>
-    let state = {
-        lvl: 1, exp: 0, coins: 100,
-        hunger: 80, clean: 100, energy: 100
-    };
-    let audio;
+    let stats = { hunger: 80, happy: 80 };
+    let audioCtx, osc;
 
-    function talk(txt, p) {
-        window.speechSynthesis.cancel(); 
-        const m = new SpeechSynthesisUtterance(txt);
-        m.lang = 'ru-RU'; m.pitch = p; m.rate = 1.4;
+    // ГОЛОС СТИЧА
+    function say(text, p = 1.8, r = 1.1) {
+        const m = new SpeechSynthesisUtterance(text);
+        m.lang = 'ru-RU'; m.pitch = p; m.rate = r;
         window.speechSynthesis.speak(m);
     }
 
-    function nav(room, btn) {
-        window.speechSynthesis.cancel();
-        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('game-window').className = room;
-        document.querySelectorAll('.toy').forEach(t => t.style.display = 'none');
-        
-        if(room === 'kitchen') { document.getElementById('t-k').style.display = 'block'; talk("Кушать!", 1.8); }
-        if(room === 'playroom') { document.getElementById('t-p').style.display = 'block'; talk("Уиии!", 2.2); }
-        if(room === 'bathroom') { document.getElementById('t-b').style.display = 'block'; talk("Вода!", 1.5); }
-        if(room === 'bedroom') { document.getElementById('t-s').style.display = 'block'; talk("Хррр", 0.8); }
-        beep(200, 0.1);
+    // МОРГАНИЕ
+    setInterval(() => {
+        const face = document.getElementById('stitch-face');
+        if (!document.getElementById('stitch-container').classList.contains('purring')) {
+            face.classList.add('blinking');
+            setTimeout(() => face.classList.remove('blinking'), 150);
+        }
+    }, 4000);
+
+    // СМЕНА КОМНАТ
+    function setRoom(name) {
+        document.body.className = name;
+        const msgs = { home: "Стич дома! 🏠", beach: "Пляж! Серфинг! 🏄‍♂️", space: "Космос! Абакаба! 🚀" };
+        document.getElementById('status').innerText = msgs[name];
+        say(name === 'space' ? "Моя лететь домой!" : "Алоха!", 2);
     }
 
-    function action(type) {
-        window.speechSynthesis.cancel();
-        dance();
-
-        if(type === 'eat') {
-            if(state.coins >= 10) {
-                state.coins -= 10; state.hunger = Math.min(100, state.hunger + 30);
-                state.exp += 20; talk("Вкусно!", 2);
-            } else { talk("Нет денег!", 1.5); }
+    // ДЕЙСТВИЯ
+    function play(act) {
+        const s = document.getElementById('status');
+        const face = document.getElementById('stitch-face');
+        
+        if (act === 'feed') {
+            stats.hunger = Math.min(100, stats.hunger + 25);
+            face.classList.add('eating');
+            say("Ммм, ням-ням!", 2, 1.3);
+            s.innerText = "Вкусно! 🥪";
+            setTimeout(() => face.classList.remove('eating'), 1000);
         }
-        if(type === 'play') {
-            if(state.energy >= 15) {
-                state.energy -= 15; state.coins += 20; state.hunger -= 10;
-                state.exp += 25; talk("Абакаба!", 2.5);
-            } else { talk("Устал...", 1.2); }
+        else if (act === 'uke') {
+            stats.happy = Math.min(100, stats.happy + 30);
+            s.innerText = "Играем музыку! 🎸";
+            say("Уииии! Абакаба!", 2.2, 1.4);
         }
-        if(type === 'wash') {
-            state.clean = 100; state.exp += 15; talk("Чисто!", 1.7);
+        else if (act === 'doll') {
+            stats.happy = Math.min(100, stats.happy + 15);
+            s.innerText = "Охана — это семья 🧸";
+            say("Охана значит семья", 0.6, 0.8);
         }
-        if(type === 'sleep') {
-            state.energy = 100; state.exp += 10; talk("Сплю", 0.8);
+        else if (act === 'sleep') {
+            s.innerText = "Стич видит сны... 💤";
+            say("Хрррр псссс", 0.5, 0.7);
         }
-
-        if(state.exp >= 100) { state.lvl++; state.exp = 0; talk("Левел ап!", 2.1); }
         updateUI();
-        beep(500, 0.1);
+    }
+
+    // МУРЧАНИЕ ПРИ НАЖАТИИ
+    function startPurr() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        osc = audioCtx.createOscillator();
+        let g = audioCtx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start();
+        document.getElementById('stitch-container').classList.add('purring');
+        document.getElementById('status').innerText = "Мрррр... ❤️";
+        stats.happy = Math.min(100, stats.happy + 0.2);
+        updateUI();
+    }
+
+    function stopPurr() {
+        if (osc) { osc.stop(); osc.disconnect(); }
+        document.getElementById('stitch-container').classList.remove('purring');
     }
 
     function updateUI() {
-        document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('coins').innerText = state.coins;
-        document.getElementById('hunger-bar').style.width = state.hunger + '%';
-        document.getElementById('clean-bar').style.width = state.clean + '%';
-        document.getElementById('energy-bar').style.width = state.energy + '%';
+        document.getElementById('h-bar').style.width = stats.hunger + '%';
+        document.getElementById('ha-bar').style.width = stats.happy + '%';
     }
 
-    // ТАЙМЕР: Показатели падают сами со временем
+    // ПАДЕНИЕ СТАТОВ
     setInterval(() => {
-        state.hunger = Math.max(0, state.hunger - 1);
-        state.clean = Math.max(0, state.clean - 0.5);
-        state.energy = Math.max(0, state.energy - 0.3);
+        stats.hunger = Math.max(0, stats.hunger - 1);
+        stats.happy = Math.max(0, stats.happy - 1);
         updateUI();
-        
-        if(state.hunger < 20) { document.getElementById('stitch').style.filter = 'grayscale(0.5)'; }
-        else { document.getElementById('stitch').style.filter = 'none'; }
-    }, 3000);
-
-    function dance() {
-        const s = document.getElementById('stitch');
-        s.style.transform = 'translateY(-40px) scale(1.1)';
-        setTimeout(() => s.style.transform = 'translateY(0) scale(1)', 150);
-    }
-
-    function createHeart(e) {
-        const h = document.createElement('div');
-        h.className = 'particle'; h.innerText = '❤️';
-        h.style.left = e.clientX + 'px'; h.style.top = e.clientY + 'px';
-        document.body.appendChild(h);
-        setTimeout(() => h.remove(), 1000);
-    }
-
-    function beep(f, d) {
-        if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
-        let o = audio.createOscillator(), g = audio.createGain();
-        o.frequency.setValueAtTime(f, audio.currentTime);
-        g.gain.setValueAtTime(0.05, audio.currentTime);
-        o.connect(g); g.connect(audio.destination);
-        o.start(); o.stop(audio.currentTime + d);
-    }
+    }, 6000);
 </script>
+
 </body>
 </html>
