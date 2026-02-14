@@ -100,7 +100,7 @@
         const f = document.getElementById('stitch-face');
         if(type === 'feed') {
             f.classList.add('eating');
-            s.innerText = "Вкусно! 🥪"; say("Ммм! Очень вкусно");
+            s.innerText = "ЛЮБЛЮ мАРЯМА"; say("Ммм! Очень вкусно");
             setTimeout(() => f.classList.remove('eating'), 1000);
         } else if(type === 'play') {
             s.innerText = "Играем! 🧸"; say("Уиии! Абакаба", 2);
